@@ -1,2 +1,11 @@
-# Youtube-Shorts-Control
-Chrome extension program to control YouTube shorts
+# 유튜브 쇼츠 컨트롤 - 크롬 확장프로그램
+#### PC 브라우저에서는 불가능 하던 유튜브 쇼츠 영상 시간을 변경할 수 있도록 도와주는 크롬 확장 프로그램 입니다.
+#### 또한, 쇼츠 영상이 끝나면 자동으로 다음 영상이 재생되는 기능도 있으며, 설정에서 적용 할 수 있습니다. (기본값 : 비활성화)
+
+---
+
+## 적용 전
+<img src="docs/images/before.gif" alt="적용전">
+
+## 적용 후
+<img src="docs/images/after.gif" alt="적용후">

@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "유튜브 쇼츠 컨트롤",
+    "description": "확장프로그램 명"
+  },
+  "extDescription": {
+    "message": "유튜브 쇼츠의 영상 시간을 조절할 수 있습니다!",
+    "description": "확장프로그램 설명"
+  },
+  "msg_auto_play": {
+    "message": "자동 재생"
+  }
+
+}

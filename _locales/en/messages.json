@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Youtube Shorts Control",
+    "description": "extension title"
+  },
+  "extDescription": {
+    "message": "You can adjust the video time of YouTube shorts!",
+    "description": "extension description"
+  },
+  "msg_auto_play": {
+    "message": "Auto Play"
+  }
+
+}

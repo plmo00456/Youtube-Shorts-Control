@@ -1,0 +1,33 @@
+#custom-progress-bar {
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  padding-top: 7px;
+  height: 5px;
+  cursor: pointer;
+  transition: height 0.2s ease-in-out;
+}
+
+#custom-progress-bar:hover {
+  height: 20px;
+  padding-top: 0;
+}
+
+#custom-progress-bar > div {
+  position: absolute;
+  left: 0;
+  height: 100%;
+}
+
+#custom-progress-bar > .buffer-bar {
+  background: #bfbfbf;
+  width: 100%;
+  z-index: 1;
+}
+
+#custom-progress-bar > .play-bar {
+  background: #ff0000;
+  width: 1%;
+  z-index: 2;
+}
