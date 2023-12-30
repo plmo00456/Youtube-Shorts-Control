@@ -16,7 +16,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.documentElement.setAttribute('data-auto-next', newAutoNext+'');
     currentTarget.setAttribute('aria-pressed', newAutoNext);
 
+    const data = {action: currentTarget.id, result: newAutoNext, relay: true};
     chrome.storage.sync.set({[currentTarget.id]: newAutoNext});
+    chrome.runtime.sendMessage(data);
   };
 
   const autoNextBtn = document.querySelector(`.switch.autoNext`);

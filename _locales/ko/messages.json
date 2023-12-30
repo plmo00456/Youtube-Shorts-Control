@@ -9,6 +9,18 @@
   },
   "msg_auto_play": {
     "message": "자동 재생"
+  },
+  "msg_view_auto_play": {
+    "message": "자동 재생"
+  },
+  "msg_view_pip": {
+    "message": "PIP"
+  },
+  "msg_view_speed": {
+    "message": "재생 속도"
+  },
+  "msg_view_speed_title": {
+    "message": "재생 속도"
   }
 
 }

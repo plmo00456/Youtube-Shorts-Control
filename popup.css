@@ -1,3 +1,7 @@
+body{
+  overflow: hidden;
+}
+
 :root {
   --clr-background: #efefef;
   --clr-text: #333333;
