@@ -109,6 +109,79 @@
   font-size: 1.4rem;
 }
 
+
+html[dark] .custom-view-control .item .btn {
+  background-color: #272727;
+}
+
+html[dark] .custom-view-control .item.active .btn {
+  background-color: #f1f1f1;
+}
+
+html[dark] .custom-view-control .item .btn svg {
+  fill: #f1f1f1;
+}
+
+html[dark] .custom-view-control .item.active .btn svg {
+  fill: #0f0f0f;
+}
+
+html[dark] .custom-view-control .item .btn:hover {
+  background-color: #3f3f3f;
+}
+
+html[dark] .custom-view-control .item.active .btn:hover {
+  background-color: #d9d9d9;
+}
+
+html[dark] .custom-view-control .item .btn:active {
+  background-color: #595959;
+}
+
+html[dark] .custom-view-control .item.active .btn:active {
+  background-color: #aeaeae;
+}
+
+html[dark] .custom-view-control .item .title {
+  color: #f1f1f1;
+}
+
+
+
+#volume-range {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#volume-range input[type=range][orient=vertical] {
+  appearance: slider-vertical;
+  width: 8px;
+  height: 175px;
+  padding: 0 5px;
+}
+
+#volume-range svg {
+  display: none;
+  fill: #636363;
+  margin-top: 1px;
+  padding: 2px;
+  width: 2rem;
+  cursor: pointer;
+}
+
+html[dark] #volume-range svg {
+  fill: #f1f1f1;
+}
+
+#volume-range svg.show {
+  display: flex;
+}
+
+#volume-range svg:hover {
+  fill: #484848;
+}
+
 .speed-layer {
   display: none;
   position: absolute;
@@ -118,6 +191,9 @@
   background-color: rgba(0, 0, 0, 0.5);
   box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
 }
+html[dark] .speed-layer {
+  background-color: #474747;
+}
 .speed-layer.active {
   display: flex;
 }
@@ -125,11 +201,39 @@
   font-size: 1.2rem;
   color: #fff;
 }
+
+.speed-layer .pin-wrap {
+  display: flex;
+  justify-content: space-between;
+}
+
+.speed-layer .pin-wrap svg {
+  display: none;
+  cursor: pointer;
+  padding: 1px;
+  width: 1.6rem;
+}
+
+.speed-layer .pin-wrap svg:hover {
+  fill: #cccccc;
+}
+
+.speed-layer.fixed .pin {
+  display: flex;
+  fill: #fff;
+}
+
+.speed-layer:not(.fixed) .pin-x {
+  display: flex;
+  fill: #e1e1e1;
+}
+
 .field{
   position: relative;
   height: auto;
   margin-top: 22px;
 }
+
 .field .value{
   position: absolute;
   color: #dddddd;
