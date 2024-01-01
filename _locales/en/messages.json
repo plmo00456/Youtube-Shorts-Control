@@ -21,6 +21,14 @@
   },
   "msg_view_speed_title": {
     "message": "Playback Speed"
+  },
+  "msg_alert_mute_on": {
+    "message": "Mute ON!"
+  },
+  "msg_alert_speed_pin_on": {
+    "message": "Playback speed pinned ON!"
+  },
+  "msg_alert_speed_pin_off": {
+    "message": "Playback speed pinned OFF!"
   }
-
 }

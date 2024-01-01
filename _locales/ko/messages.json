@@ -21,6 +21,15 @@
   },
   "msg_view_speed_title": {
     "message": "재생 속도"
+  },
+  "msg_alert_mute_on": {
+    "message": "음소거 ON!"
+  },
+  "msg_alert_speed_pin_on": {
+    "message": "재생 속도 고정 ON!"
+  },
+  "msg_alert_speed_pin_off": {
+    "message": "재생 속도 고정 OFF!"
   }
 
 }

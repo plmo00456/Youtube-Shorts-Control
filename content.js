@@ -6,6 +6,29 @@ window.onload = function() {
   const mo = new MutationObserver(onMutation);
   let flag = false;
 
+  let alertTimeoutId = null;
+  function showAlert(message, time) {
+    if(document.querySelector('#alert')){
+      let alertBox = document.getElementById('alert');
+      let alertMessage = document.getElementById('alert-message');
+
+      if(alertTimeoutId) {
+        clearTimeout(alertTimeoutId);
+      }
+
+      alertMessage.textContent = message;
+      alertBox.style.opacity = '1';
+
+      alertTimeoutId = setTimeout(function() {
+        alertBox.style.opacity = '0';
+      }, time);
+
+      alertBox.addEventListener('click', function() {
+        alertBox.style.opacity = '0';
+      });
+    }
+  }
+
   const reset = () => {
     if (document.querySelector('#custom-progress-bar')) {
       document.querySelector('#custom-progress-bar').remove();
@@ -29,8 +52,16 @@ window.onload = function() {
   observe();
 
   function onMutation() {
-
     video = document.querySelector("div#shorts-player .video-stream.html5-main-video");
+    if(!document.querySelector('#alert') && document.querySelector('#shorts-container')){
+      const alertDiv = document.createElement('div');
+      alertDiv.id = 'alert';
+      alertDiv.classList.add('alert');
+      alertDiv.innerHTML = `
+        <span id="alert-message"></span>
+      `;
+      document.querySelector('#shorts-container').prepend(alertDiv);
+    }
     if(video){
       chrome.storage.sync.get('autoNext', (data) => {
         if (data['autoNext']){
@@ -176,6 +207,7 @@ window.onload = function() {
             chrome.storage.sync.set({'autoNext': false});
             video.loop = true;
             video.onended = null;
+            showAlert(chrome.i18n.getMessage('msg_view_auto_play') + ' OFF!', 1000);
           } else {
             chrome.storage.sync.set({'autoNext': true});
             autoPlayBtn.classList.add('active');
@@ -190,6 +222,7 @@ window.onload = function() {
               });
               document.body.dispatchEvent(event);
             }
+            showAlert(chrome.i18n.getMessage('msg_view_auto_play') + ' ON!', 1000);
           }
         });
       };
@@ -212,6 +245,7 @@ window.onload = function() {
         }
       });
       volumeRange.oninput = () => {
+        showAlert(volumeRange.value + '%', 500);
         chrome.storage.sync.set({'volume': volumeRange.value});
         volumeWrap.querySelectorAll('svg').forEach((icon) => {
           icon.classList.remove('show');
@@ -233,12 +267,14 @@ window.onload = function() {
           });
 
           if(volumeRange.value !== '0'){
+            showAlert(chrome.i18n.getMessage('msg_alert_mute_on'), 500);
             volumeRange.value = 0;
             video.volume = '0';
             volumeWrap.querySelector('.mute').classList.add('show');
           }else{
             chrome.storage.sync.get('volume', (data) => {
               if (data['volume'] && data['volume'] !== '0') {
+                showAlert(data['volume'] + '%', 500);
                 volumeRange.value = data['volume'];
                 video.volume = data['volume'] / 100;
                 if(parseInt(volumeRange.value) === 0){
@@ -249,6 +285,7 @@ window.onload = function() {
                   volumeWrap.querySelector('.two').classList.add('show');
                 }
               } else {
+                showAlert('80%', 500);
                 volumeRange.value = 80;
                 video.volume = '0.8';
                 chrome.storage.sync.set({'volume': '80'});
@@ -292,11 +329,70 @@ window.onload = function() {
           speedLayer.classList.toggle('fixed');
           if(speedLayer.classList.contains('fixed')){
             chrome.storage.sync.set({'speedPin': inputSlider.value});
+            showAlert(chrome.i18n.getMessage('msg_alert_speed_pin_on'), 1000);
           }else{
             chrome.storage.sync.set({'speedPin': null});
+            showAlert(chrome.i18n.getMessage('msg_alert_speed_pin_off'), 1000);
           }
         }
       });
+
+      const speedLayerDragFn = () => {
+        let active = false;
+        let initialX;
+        let initialY;
+        let currentX;
+        let currentY;
+        let xOffset = 0;
+        let yOffset = 0;
+
+        speedLayer.addEventListener("mousedown", dragStart, false);
+        document.addEventListener("mouseup", dragEnd, false);
+        document.addEventListener("mousemove", drag, false);
+
+        let noDragItem = document.querySelectorAll("input, svg");
+        noDragItem.forEach(function(item) {
+          item.addEventListener("mousedown", function(e) {
+            e.stopPropagation();
+          }, false);
+        });
+
+        function dragStart(e) {
+          initialX = e.clientX - xOffset;
+          initialY = e.clientY - yOffset;
+
+          if (speedLayer.contains(e.target)) {
+            active = true;
+          }
+        }
+
+        function drag(e) {
+          if (active) {
+
+            e.preventDefault();
+
+            currentX = e.clientX - initialX;
+            currentY = e.clientY - initialY;
+
+            xOffset = currentX;
+            yOffset = currentY;
+
+            setTranslate(currentX, currentY, speedLayer);
+          }
+        }
+
+        function dragEnd(e) {
+          initialX = currentX;
+          initialY = currentY;
+
+          active = false;
+        }
+        function setTranslate(xPos, yPos, el) {
+          el.style.transform = "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+        }
+      }
+
+      speedLayerDragFn();
 
       inputSlider.oninput = (()=>{
         let value = inputSlider.value;
@@ -343,12 +439,14 @@ window.onload = function() {
         video.playbackRate = value;
         if(speedLayer.classList.contains('fixed'))
           chrome.storage.sync.set({'speedPin': value});
+
+        showAlert('x'+value, 500);
       });
       inputSlider.onblur = (()=>{
         slideValue.classList.remove("show");
       });
       chrome.storage.sync.get('speedPin', (data) => {
-        if( data['speedPin'] !== '1' && data['speedPin'] !== null ) {
+        if( data['speedPin'] && data['speedPin'] !== '1' ) {
           speedBtn.classList.add('active');
           speedLayer.classList.add('fixed');
           inputSlider.value = data['speedPin'];
@@ -383,6 +481,7 @@ window.onload = function() {
     video = document.querySelector("div#shorts-player .video-stream.html5-main-video");
     const init = () => {
       if(video){
+
         video.onvolumechange = () => {
           const volumeWrap = document.querySelector('#volume-range');
           if(volumeWrap){
