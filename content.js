@@ -50,6 +50,18 @@ window.onload = function() {
         }
       });
     }
+    if(video && customProgressBar && !video.ontimeupdate){
+      video.ontimeupdate = () => {
+        if(video){
+          const currentTime = video.currentTime;
+          const duration = video.duration;
+          const timePer = parseInt((currentTime / duration) * 100);
+          const oriWitdh = customProgressBar.querySelector('.play-bar').style.width;
+          if (timePer + '%' !== oriWitdh)
+            customProgressBar.querySelector('.play-bar').style.width = timePer + '%';
+        }
+      }
+    }
     if (document.querySelector(oriProgressBar)) {
       document.querySelector(oriProgressBar).style.visibility = 'hidden';
     }
@@ -162,9 +174,22 @@ window.onload = function() {
           autoPlayBtn.classList.remove('active');
           if (data['autoNext']) {
             chrome.storage.sync.set({'autoNext': false});
+            video.loop = true;
+            video.onended = null;
           } else {
             chrome.storage.sync.set({'autoNext': true});
             autoPlayBtn.classList.add('active');
+            video.loop = false;
+            video.onended = () => {
+              let event = new KeyboardEvent('keydown', {
+                key: 'ArrowDown',
+                code: 'ArrowDown',
+                view: window,
+                bubbles: true,
+                cancelable: true
+              });
+              document.body.dispatchEvent(event);
+            }
           }
         });
       };
@@ -356,9 +381,8 @@ window.onload = function() {
 
   const run = () => {
     video = document.querySelector("div#shorts-player .video-stream.html5-main-video");
-    let interval = null;
     const init = () => {
-      video.onplaying = () => {
+      if(video){
         video.onvolumechange = () => {
           const volumeWrap = document.querySelector('#volume-range');
           if(volumeWrap){
@@ -366,96 +390,87 @@ window.onload = function() {
             video.volume = volumeRange.value / 100;
           }
         };
+        video.onplaying = () => {
+          if (video && parseInt(video.currentTime) === 0) {
+            reset();
 
-        if (parseInt(video.currentTime) === 0) {
-          reset();
-
-          video.closest('div').style.height = '100%';
-          const div = document.createElement('div');
-          div.id = 'custom-progress-bar';
-          div.innerHTML = `
+            video.closest('div').style.height = '100%';
+            const div = document.createElement('div');
+            div.id = 'custom-progress-bar';
+            div.innerHTML = `
             <div class="buffer-bar"></div>
             <div class="play-bar"></div>
           `;
 
-          video.after(div);
+            video.after(div);
 
-          customProgressBar = document.querySelector('#custom-progress-bar');
-          const bufferBar = customProgressBar.querySelector('.buffer-bar');
-          const playBar = customProgressBar.querySelector('.play-bar');
+            customProgressBar = document.querySelector('#custom-progress-bar');
+            const bufferBar = customProgressBar.querySelector('.buffer-bar');
+            const playBar = customProgressBar.querySelector('.play-bar');
 
-          let isMouseDown = false;
-          bufferBar.addEventListener('mousedown', function (event) {
-            isMouseDown = true;
-          });
-          bufferBar.addEventListener('mouseup', function (event) {
-            leaveEvent();
-          });
+            let isMouseDown = false;
+            bufferBar.addEventListener('mousedown', function (event) {
+              isMouseDown = true;
+            });
+            bufferBar.addEventListener('mouseup', function (event) {
+              leaveEvent();
+            });
 
-          playBar.addEventListener('mousedown', function (event) {
-            isMouseDown = true;
-          });
-          playBar.addEventListener('mouseup', function (event) {
-            leaveEvent();
-          });
+            playBar.addEventListener('mousedown', function (event) {
+              isMouseDown = true;
+            });
+            playBar.addEventListener('mouseup', function (event) {
+              leaveEvent();
+            });
 
-          customProgressBar.addEventListener('mouseleave', function (event) {
-            leaveEvent();
-          });
+            customProgressBar.addEventListener('mouseleave', function (event) {
+              leaveEvent();
+            });
 
-          bufferBar.addEventListener('click', function (event) {
-            clickEvent();
-          });
-          bufferBar.addEventListener('mousemove', function (event) {
-            overEvent();
-          });
-          playBar.addEventListener('click', function (event) {
-            clickEvent();
-          });
+            bufferBar.addEventListener('click', function (event) {
+              clickEvent();
+            });
+            bufferBar.addEventListener('mousemove', function (event) {
+              overEvent();
+            });
+            playBar.addEventListener('click', function (event) {
+              clickEvent();
+            });
 
-          playBar.addEventListener('mousemove', function (event) {
-            overEvent();
-          });
+            playBar.addEventListener('mousemove', function (event) {
+              overEvent();
+            });
 
-          clearInterval(interval);
-          interval = setInterval(() => {
-            const currentTime = video.currentTime;
-            const duration = video.duration;
-            const timePer = parseInt((currentTime / duration) * 100);
-            const oriWitdh = customProgressBar.querySelector('.play-bar').style.width;
-            if (timePer + '%' !== oriWitdh)
-              customProgressBar.querySelector('.play-bar').style.width = timePer + '%';
-          }, 1000);
-
-          const clickEvent = () => {
-            const mousePosition = event.clientX
-                - bufferBar.parentNode.getBoundingClientRect().left;
-            const percentageInParent = (mousePosition
-                / customProgressBar.offsetWidth) * 100;
-            playBar.style.width = `${percentageInParent}%`;
-            video.currentTime = video.duration * (mousePosition
-                / customProgressBar.offsetWidth);
-          }
-
-          const overEvent = () => {
-            if (isMouseDown) {
+            const clickEvent = () => {
               const mousePosition = event.clientX
                   - bufferBar.parentNode.getBoundingClientRect().left;
               const percentageInParent = (mousePosition
                   / customProgressBar.offsetWidth) * 100;
-
               playBar.style.width = `${percentageInParent}%`;
               video.currentTime = video.duration * (mousePosition
                   / customProgressBar.offsetWidth);
             }
-          }
 
-          const leaveEvent = () => {
-            isMouseDown = false;
-            if (!video.paused) {
-              setTimeout(() => {
-                video.play();
-              }, 50);
+            const overEvent = () => {
+              if (isMouseDown) {
+                const mousePosition = event.clientX
+                    - bufferBar.parentNode.getBoundingClientRect().left;
+                const percentageInParent = (mousePosition
+                    / customProgressBar.offsetWidth) * 100;
+
+                playBar.style.width = `${percentageInParent}%`;
+                video.currentTime = video.duration * (mousePosition
+                    / customProgressBar.offsetWidth);
+              }
+            }
+
+            const leaveEvent = () => {
+              isMouseDown = false;
+              if (!video.paused) {
+                setTimeout(() => {
+                  video.play();
+                }, 50);
+              }
             }
           }
         }
