@@ -4,7 +4,7 @@
     "description": "extension title"
   },
   "extDescription": {
-    "message": "You can adjust the video time of YouTube shorts!",
+    "message": "You can manipulate YouTube shorts in a variety of ways!",
     "description": "extension description"
   },
   "msg_auto_play": {
@@ -30,5 +30,8 @@
   },
   "msg_alert_speed_pin_off": {
     "message": "Playback speed pinned OFF!"
+  },
+  "msg_video_move_tooltip_sec": {
+    "message": "Sec"
   }
 }

@@ -1,12 +1,11 @@
 {
+"update_url": "https://clients2.google.com/service/update2/crx",
+
   "manifest_version": 3,
   "name": "__MSG_extName__",
   "description": "__MSG_extDescription__",
-  "version": "1.55",
+  "version": "1.65",
   "default_locale": "en",
-  "action": {
-    "default_popup": "popup.html"
-  },
   "content_scripts": [
     {
       "matches": ["*://*.youtube.com/*"],
@@ -24,5 +23,14 @@
     "48": "icon_48.png",
     "64": "icon_64.png",
     "128": "icon_128.png"
+  },
+  "action": {
+      "default_icon": {
+          "16": "icon_16.png",
+          "32": "icon_32.png",
+          "48": "icon_48.png",
+          "64": "icon_64.png",
+          "128": "icon_128.png"
+      }
   }
 }

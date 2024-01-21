@@ -9,13 +9,22 @@ window.onload = function() {
   let alertTimeoutId = null;
   function showAlert(message, time) {
     if(document.querySelector('#alert')){
+      let isCommentPanel = false;
       let alertBox = document.getElementById('alert');
       let alertMessage = document.getElementById('alert-message');
+
+      if(video.closest('ytd-reel-video-renderer') && video.closest('ytd-reel-video-renderer').getAttribute('is-watch-while-mode') === ''){
+        isCommentPanel = true;
+      }
 
       if(alertTimeoutId) {
         clearTimeout(alertTimeoutId);
       }
 
+      if(isCommentPanel)
+        alertBox.classList.add('is-comment-panel');
+      else
+        alertBox.classList.remove('is-comment-panel');
       alertMessage.textContent = message;
       alertBox.style.opacity = '1';
 
@@ -29,29 +38,76 @@ window.onload = function() {
     }
   }
 
-  const reset = () => {
-    if (document.querySelector('#custom-progress-bar')) {
-      document.querySelector('#custom-progress-bar').remove();
-    }
-    if (document.querySelector('#custom-view-control')) {
-      document.querySelector('#custom-view-control').remove();
+  let videoMoveTooltipTimeoutId = null;
+  function showVideoMove(key, time) {
+    let isCommentPanel = false;
+    const videoMoveTooltip = document.querySelector('#video-move-tooltip');
+    if(videoMoveTooltip){
+      if(videoMoveTooltipTimeoutId) {
+        clearTimeout(videoMoveTooltipTimeoutId);
+      }
+
+      if(video.closest('ytd-reel-video-renderer') && video.closest('ytd-reel-video-renderer').getAttribute('is-watch-while-mode') === ''){
+        isCommentPanel = true;
+      }
+
+      if(isCommentPanel)
+        videoMoveTooltip.classList.add('is-comment-panel');
+      else
+        videoMoveTooltip.classList.remove('is-comment-panel');
+      videoMoveTooltip.style.display = 'unset';
+      if(key === 'ArrowLeft'){
+        videoMoveTooltip.dataset.side = 'back';
+        video.currentTime -= 5;
+      }else{
+        videoMoveTooltip.dataset.side = 'forward';
+        video.currentTime += 5;
+      }
+
+      videoMoveTooltipTimeoutId = setTimeout(function() {
+        videoMoveTooltip.dataset.side = '';
+        videoMoveTooltip.style.display = 'none';
+      }, time);
     }
   }
 
-  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    const msgViewAutoPlay = document.querySelector('#msg_view_auto_play');
-    if (msgViewAutoPlay && request.action === "autoNext") {
-      if (request.result) {
-        msgViewAutoPlay.classList.add('active');
-      } else {
-        msgViewAutoPlay.classList.remove('active');
-      }
-    }
-  });
-
   observe();
 
+  // 자동재생 확인
+  setInterval( () => {
+    // 초기 자동재생 설정
+    if(video) {
+      const msgViewAutoPlay = document.querySelector('#msg_view_auto_play');
+      if(msgViewAutoPlay && msgViewAutoPlay.classList.contains('active') && (!video.onended || video.loop)){
+        video.loop = false;
+        video.onended = () => {
+          let event = new KeyboardEvent('keydown', {
+            key: 'ArrowDown',
+            code: 'ArrowDown',
+            view: window,
+            bubbles: true,
+            cancelable: true
+          });
+          document.body.dispatchEvent(event);
+        }
+      }else if(msgViewAutoPlay && !msgViewAutoPlay.classList.contains('active')){
+        video.loop = true;
+      }
+      if(!video.onvolumechange){
+        // 영상 볼륨 이벤트
+        video.onvolumechange = () => {
+          const volumeWrap = document.querySelector('#volume-range');
+          if(volumeWrap){
+            const volumeRange = volumeWrap.querySelector('input[type=range]');
+            video.volume = volumeRange.value / 100;
+          }
+        };
+      }
+    }
+  }, 250);
+
   function onMutation() {
+    // 경고 DIV 생성
     video = document.querySelector("div#shorts-player .video-stream.html5-main-video");
     if(!document.querySelector('#alert') && document.querySelector('#shorts-container')){
       const alertDiv = document.createElement('div');
@@ -62,9 +118,91 @@ window.onload = function() {
       `;
       document.querySelector('#shorts-container').prepend(alertDiv);
     }
-    if(video){
+
+    if(video && !video.parentNode.querySelector('#custom-progress-bar')){
+      document.querySelectorAll('#custom-progress-bar').forEach(el => {
+        el.remove();
+      });
+
+      video.closest('div').style.height = '100%';
+      const div = document.createElement('div');
+      div.id = 'custom-progress-bar';
+      div.innerHTML = `
+            <div class="buffer-bar"></div>
+            <div class="play-bar"></div>
+          `;
+
+      video.after(div);
+
+      customProgressBar = document.querySelector('#custom-progress-bar');
+      const bufferBar = customProgressBar.querySelector('.buffer-bar');
+      const playBar = customProgressBar.querySelector('.play-bar');
+
+      let isMouseDown = false;
+      bufferBar.onmousedown = () => {
+        isMouseDown = true;
+      };
+      bufferBar.onmouseup = () => {
+        leaveEvent();
+      };
+
+      playBar.onmousedown = () => {
+        isMouseDown = true;
+      };
+      playBar.onmouseup = () => {
+        leaveEvent();
+      };
+
+      customProgressBar.onmouseleave = () => {
+        leaveEvent();
+      };
+
+      bufferBar.onclick = () => {
+        clickEvent();
+      };
+      bufferBar.onmousemove = () => {
+        overEvent();
+      };
+      playBar.onclick = () => {
+        clickEvent();
+      };
+      playBar.onmousemove = () => {
+        overEvent();
+      };
+
+      const clickEvent = () => {
+        const mousePosition = event.clientX
+            - bufferBar.parentNode.getBoundingClientRect().left;
+        const percentageInParent = (mousePosition / customProgressBar.offsetWidth) * 100;
+        playBar.style.width = `${percentageInParent}%`;
+        video.currentTime = video.duration * (mousePosition / customProgressBar.offsetWidth);
+      }
+
+      const overEvent = () => {
+        if (isMouseDown) {
+          const mousePosition = event.clientX - bufferBar.parentNode.getBoundingClientRect().left;
+          const percentageInParent = (mousePosition / customProgressBar.offsetWidth) * 100;
+
+          playBar.style.width = `${percentageInParent}%`;
+          video.currentTime = video.duration * (mousePosition
+              / customProgressBar.offsetWidth);
+        }
+      }
+
+      const leaveEvent = () => {
+        isMouseDown = false;
+        if (!video.paused) {
+          setTimeout(() => {
+            video.play();
+          }, 50);
+        }
+      }
+    }
+
+    // 커스텀 재생 바 게이지 이벤트 (영상 당 1회)
+    if(video && customProgressBar && !video.ontimeupdate){
       chrome.storage.sync.get('autoNext', (data) => {
-        if (data['autoNext']){
+        if (data['autoNext']) {
           video.loop = false;
           video.onended = () => {
             let event = new KeyboardEvent('keydown', {
@@ -76,12 +214,11 @@ window.onload = function() {
             });
             document.body.dispatchEvent(event);
           }
-        }else{
+        } else {
           video.loop = true;
         }
       });
-    }
-    if(video && customProgressBar && !video.ontimeupdate){
+
       video.ontimeupdate = () => {
         if(video){
           const currentTime = video.currentTime;
@@ -93,15 +230,50 @@ window.onload = function() {
         }
       }
     }
-    if (document.querySelector(oriProgressBar)) {
+
+    // 영상 기본 재생바 가리기 (영상 당 1회)
+    if (document.querySelector(oriProgressBar) && document.querySelector(oriProgressBar).style.visibility !== 'hidden') {
       document.querySelector(oriProgressBar).style.visibility = 'hidden';
     }
 
-    if(video && document.querySelector("div#shorts-player").closest('.short-video-container') && !document.querySelector("div#shorts-player").closest('.short-video-container').querySelector('#custom-view-control')){
-      if (document.querySelector('#custom-view-control')) {
-        document.querySelector('#custom-view-control').remove();
-      }
+    // 빨리감기 아이콘 추가 (영상 당 1회)
+    if(video
+        && video.closest('.short-video-container')
+        && !video.closest('.short-video-container').querySelector('#video-move-tooltip')){
+      document.querySelectorAll('#video-move-tooltip').forEach(el => {
+        el.remove();
+      })
 
+      const leftRightMoveDiv = document.createElement('div');
+      leftRightMoveDiv.style.pointerEvents = 'none';
+      leftRightMoveDiv.style.display = 'none';
+      leftRightMoveDiv.id = 'video-move-tooltip';
+      leftRightMoveDiv.classList.add('ytp-doubletap-ui-legacy');
+      leftRightMoveDiv.innerHTML = `
+        <div class="ytp-doubletap-seek-info-container">
+          <div class="move-tooltip-circle">
+          </div>
+          <div class="ytp-doubletap-arrows-container">
+            <span class="ytp-doubletap-base-arrow"></span>
+            <span class="ytp-doubletap-base-arrow"></span>
+            <span class="ytp-doubletap-base-arrow"></span>
+          </div>
+          <div class="ytp-doubletap-tooltip">
+            <div class="ytp-chapter-seek-text-legacy"></div>
+            <div class="ytp-doubletap-tooltip-label">5${chrome.i18n.getMessage('msg_video_move_tooltip_sec')}</div>
+          </div>
+        </div>
+      `;
+      video.closest('.short-video-container').prepend(leftRightMoveDiv);
+    }
+
+    // 커스텀 컨트롤 버튼 추가 (영상 당 1회)
+    if(video
+        && document.querySelector("div#shorts-player").closest('.short-video-container')
+        && !document.querySelector("div#shorts-player").closest('.short-video-container').querySelector('#custom-view-control')){
+      document.querySelectorAll('#custom-view-control').forEach(el => {
+        el.remove();
+      })
       const div2 = document.createElement('div');
       div2.id = 'custom-view-control';
       div2.classList.add('custom-view-control');
@@ -167,11 +339,12 @@ window.onload = function() {
                   <svg class="pin" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><path d="M 14.2539 35.9688 L 25.9492 35.9688 L 25.9492 48.0156 C 25.9492 51.5781 27.4258 54.5781 28.0117 54.5781 C 28.5976 54.5781 30.0742 51.5781 30.0742 48.0156 L 30.0742 35.9688 L 41.7461 35.9688 C 43.3633 35.9688 44.5351 34.9375 44.5351 33.3672 C 44.5351 32.3828 44.2305 31.6797 43.5508 30.9532 L 36.3789 23.1719 C 35.8867 22.6563 35.5820 22.2813 35.6992 21.3203 L 36.8945 12.7657 C 36.9649 12.2735 37.0117 11.9922 37.4336 11.6875 L 43.1992 7.5157 C 44.4883 6.5781 45.0508 5.4297 45.0508 4.3750 C 45.0508 2.8047 43.7851 1.4219 41.9805 1.4219 L 14.0195 1.4219 C 12.2149 1.4219 10.9492 2.8047 10.9492 4.3750 C 10.9492 5.4297 11.5117 6.5781 12.7773 7.5157 L 18.5429 11.6875 C 18.9883 11.9922 19.0351 12.2735 19.1054 12.7657 L 20.3008 21.3203 C 20.4180 22.2813 20.1133 22.6563 19.6211 23.1719 L 12.4492 30.9532 C 11.7695 31.6797 11.4649 32.3828 11.4649 33.3672 C 11.4649 34.9375 12.6367 35.9688 14.2539 35.9688 Z"/></svg>
                   <svg class="pin-x" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg"><path d="M 47.2561 44.3576 C 47.9779 45.0794 49.1191 45.0794 49.7943 44.3576 C 50.4924 43.6591 50.5158 42.5414 49.7943 41.8196 L 8.6498 .6985 C 7.9512 0 6.7870 0 6.0885 .6985 C 5.4132 1.3738 5.4132 2.5613 6.0885 3.2366 Z M 35.9629 24.2162 L 37.3134 14.4599 C 37.3600 13.9476 37.4531 13.6449 37.9188 13.3422 L 43.5770 9.2441 C 44.8577 8.3127 45.3932 7.1717 45.3932 6.1239 C 45.3932 4.5638 44.1591 3.1900 42.3429 3.1900 L 14.9367 3.1900 Z M 13.1670 37.5119 L 25.6011 37.5119 L 25.6011 49.4803 C 25.6011 53.0195 27.0914 56 27.6502 56 C 28.2323 56 29.7226 53.0195 29.7226 49.4803 L 29.7226 37.5119 L 36.2656 37.5119 L 18.7554 20.0016 L 19.1512 22.9588 C 19.2910 23.9135 18.9650 24.2861 18.4993 24.7983 L 11.3741 32.5289 C 10.6988 33.2507 10.3962 33.9493 10.3962 34.9273 C 10.3962 36.4873 11.5371 37.5119 13.1670 37.5119 Z"/></svg>
                 </div>
-                <div class="field">
-                  <div class="value left">0.25</div>
-                  <input type="range" min="0.25" max="3" value="1" step="0.25">
-                  <div class="value right">3</div>
+                <div class="range-slider" style='--min:0.25; --max:3; --step:0.25; --value:1; --text-value:"1";'>
+                  <input type="range" min="0.25" max="3" value="1" step="0.25" oninput="this.parentNode.style.setProperty('--value',this.value); this.parentNode.style.setProperty('--text-value', JSON.stringify(this.value))">
+                  <output></output>
+                  <div class='range-slider__progress'></div>
                 </div>
+                <div class="one_line"></div>
               </div>
             </div>
           </div>
@@ -308,7 +481,7 @@ window.onload = function() {
         }
       };
 
-      const slideValue = document.querySelector(".range span");
+      const rangeSlider = document.querySelector(".range .range-slider");
       const inputSlider = document.querySelector(".range input");
       const speedLayer = speedBtn.querySelector('.speed-layer');
       const speedPin = speedBtn.querySelectorAll('.pin-wrap svg');
@@ -396,54 +569,11 @@ window.onload = function() {
 
       inputSlider.oninput = (()=>{
         let value = inputSlider.value;
-        slideValue.textContent = value;
-        switch(value){
-          case '0.25':
-            slideValue.style.left = '13%';
-            break;
-          case '0.5':
-            slideValue.style.left = '21%';
-            break;
-          case '0.75':
-            slideValue.style.left = '29%';
-            break;
-          case '1':
-            slideValue.style.left = '37%';
-            break;
-          case '1.25':
-            slideValue.style.left = '45%';
-            break;
-          case '1.5':
-            slideValue.style.left = '53%';
-            break;
-          case '1.75':
-            slideValue.style.left = '61%';
-            break;
-          case '2':
-            slideValue.style.left = '69%';
-            break;
-          case '2.25':
-            slideValue.style.left = '77%';
-            break;
-          case '2.5':
-            slideValue.style.left = '85%';
-            break;
-          case '2.75':
-            slideValue.style.left = '93%';
-            break;
-          case '3':
-            slideValue.style.left = '100%';
-            break;
-        }
-        slideValue.classList.add("show");
         video.playbackRate = value;
         if(speedLayer.classList.contains('fixed'))
           chrome.storage.sync.set({'speedPin': value});
 
         showAlert('x'+value, 500);
-      });
-      inputSlider.onblur = (()=>{
-        slideValue.classList.remove("show");
       });
       chrome.storage.sync.get('speedPin', (data) => {
         if( data['speedPin'] && data['speedPin'] !== '1' ) {
@@ -451,11 +581,12 @@ window.onload = function() {
           speedLayer.classList.add('fixed');
           inputSlider.value = data['speedPin'];
           video.playbackRate = data['speedPin'];
+          rangeSlider.style.setProperty('--value', data['speedPin']);
+          rangeSlider.style.setProperty('--text-value', `"${data['speedPin']}"`);
         }
       });
 
       settingBtn.onclick = () => {
-        chrome.runtime.sendMessage({action: "openPopup"});
       };
 
     }
@@ -481,98 +612,12 @@ window.onload = function() {
     video = document.querySelector("div#shorts-player .video-stream.html5-main-video");
     const init = () => {
       if(video){
-
-        video.onvolumechange = () => {
-          const volumeWrap = document.querySelector('#volume-range');
-          if(volumeWrap){
-            const volumeRange = volumeWrap.querySelector('input[type=range]');
-            video.volume = volumeRange.value / 100;
+        // 영상 빨리감기
+        window.addEventListener('keydown', function(event) {
+          if(event.key === 'ArrowLeft' || event.key === 'ArrowRight'){
+            showVideoMove(event.key, 700);
           }
-        };
-        video.onplaying = () => {
-          if (video && parseInt(video.currentTime) === 0) {
-            reset();
-
-            video.closest('div').style.height = '100%';
-            const div = document.createElement('div');
-            div.id = 'custom-progress-bar';
-            div.innerHTML = `
-            <div class="buffer-bar"></div>
-            <div class="play-bar"></div>
-          `;
-
-            video.after(div);
-
-            customProgressBar = document.querySelector('#custom-progress-bar');
-            const bufferBar = customProgressBar.querySelector('.buffer-bar');
-            const playBar = customProgressBar.querySelector('.play-bar');
-
-            let isMouseDown = false;
-            bufferBar.addEventListener('mousedown', function (event) {
-              isMouseDown = true;
-            });
-            bufferBar.addEventListener('mouseup', function (event) {
-              leaveEvent();
-            });
-
-            playBar.addEventListener('mousedown', function (event) {
-              isMouseDown = true;
-            });
-            playBar.addEventListener('mouseup', function (event) {
-              leaveEvent();
-            });
-
-            customProgressBar.addEventListener('mouseleave', function (event) {
-              leaveEvent();
-            });
-
-            bufferBar.addEventListener('click', function (event) {
-              clickEvent();
-            });
-            bufferBar.addEventListener('mousemove', function (event) {
-              overEvent();
-            });
-            playBar.addEventListener('click', function (event) {
-              clickEvent();
-            });
-
-            playBar.addEventListener('mousemove', function (event) {
-              overEvent();
-            });
-
-            const clickEvent = () => {
-              const mousePosition = event.clientX
-                  - bufferBar.parentNode.getBoundingClientRect().left;
-              const percentageInParent = (mousePosition
-                  / customProgressBar.offsetWidth) * 100;
-              playBar.style.width = `${percentageInParent}%`;
-              video.currentTime = video.duration * (mousePosition
-                  / customProgressBar.offsetWidth);
-            }
-
-            const overEvent = () => {
-              if (isMouseDown) {
-                const mousePosition = event.clientX
-                    - bufferBar.parentNode.getBoundingClientRect().left;
-                const percentageInParent = (mousePosition
-                    / customProgressBar.offsetWidth) * 100;
-
-                playBar.style.width = `${percentageInParent}%`;
-                video.currentTime = video.duration * (mousePosition
-                    / customProgressBar.offsetWidth);
-              }
-            }
-
-            const leaveEvent = () => {
-              isMouseDown = false;
-              if (!video.paused) {
-                setTimeout(() => {
-                  video.play();
-                }, 50);
-              }
-            }
-          }
-        }
+        });
       }
     };
 
