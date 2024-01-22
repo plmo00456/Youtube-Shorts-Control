@@ -33,5 +33,23 @@
   },
   "msg_video_move_tooltip_sec": {
     "message": "Sec"
+  },
+  "msg_video_help_move_rewind": {
+    "message": "Rewind 5 seconds"
+  },
+  "msg_video_help_move_forward": {
+    "message": "Fast forward 5 seconds"
+  },
+  "msg_video_help_playback_decrease": {
+    "message": "Decrease playback rate"
+  },
+  "msg_video_help_playback_increase": {
+    "message": "Increase playback rate"
+  },
+  "msg_video_help_volume_down": {
+    "message": "Turn down the volume"
+  },
+  "msg_video_help_volume_up": {
+    "message": "Turn up the volume"
   }
 }

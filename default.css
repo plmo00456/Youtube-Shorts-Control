@@ -355,7 +355,8 @@ html[dark] .speed-layer {
   transition: opacity 0.5s ease-in-out;
   z-index: 1000;
   cursor: pointer;
-  border-radius: 10px
+  border-radius: 10px;
+  pointer-events: none;
 }
 
 .alert.is-comment-panel {
@@ -723,4 +724,86 @@ ytd-reel-player-overlay-renderer[is-watch-while-mode] #actions.ytd-reel-player-o
   bottom: 20px;
   left: 55px;
   z-index: 100;
+}
+
+#custom-help {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: -370px;
+  box-shadow: rgba(100, 100, 111, 0.2) 0px 7px 29px 0px;
+  border-radius: 5px;
+  width: 300px;
+  padding: 20px;
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  -ms-user-select:none;
+  user-select:none;
+}
+
+#custom-help.active {
+  display: flex;
+  flex-direction: column;
+}
+
+#custom-help .header {
+  margin-bottom: 10px;
+  position: relative;
+  padding: 5px 0 10px 0;
+}
+
+#custom-help .header button{
+  position: absolute;
+  border: none;
+  outline: none;
+  padding: 5px 8px;
+  border-radius: 14px;
+  background: #f2f2f2;
+  top: -7px;
+  right: -7px;
+  cursor: pointer;
+}
+
+#custom-help .header button svg {
+  width: 1rem;
+}
+
+#custom-help .header button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+#custom-help .header button:active{
+  background-color: rgba(0,0,0,.2);
+}
+
+#custom-help .header span{
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+#custom-help .header #logo-icon {
+  margin-right: 5px;
+  width: 48px;
+  height: 48px;
+}
+
+#custom-help .header span{
+  font-weight: bold;
+  font-size: 2rem;
+}
+
+#custom-help .row {
+  display: flex;
+  align-items: center;
+}
+
+#custom-help .row:not(.header) {
+  justify-content: space-between;
+  padding: 8px 0;
+  border-top: 1px solid rgba(0,0,0,0.1);
+  font-size: 1.2rem;
+}
+
+#custom-help .row:not(.header) span:nth-child(2) {
+  width: 35%;
 }

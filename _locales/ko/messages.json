@@ -33,6 +33,23 @@
   },
   "msg_video_move_tooltip_sec": {
     "message": "초"
+  },
+  "msg_video_help_move_rewind": {
+    "message": "5초 되감기"
+  },
+  "msg_video_help_move_forward": {
+    "message": "5초 앞으로 건너뛰기"
+  },
+  "msg_video_help_playback_decrease": {
+    "message": "재생 속도 느리게"
+  },
+  "msg_video_help_playback_increase": {
+    "message": "재생 속도 빠르게"
+  },
+  "msg_video_help_volume_down": {
+    "message": "소리 작게"
+  },
+  "msg_video_help_volume_up": {
+    "message": "소리 크게"
   }
-
 }
