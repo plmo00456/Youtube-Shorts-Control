@@ -2,7 +2,7 @@
 
 #### 유튜브 쇼츠를 제어 할 수 있는 컨트롤이 생성됩니다!
 #### 다음과 같이 유튜브 쇼츠를 제어 할 수 있습니다.
-
+c
 ---
 
 - 자동 재생 : 영상 시간이 끝나면 자동으로 다음 영상이 재생됩니다.
@@ -18,6 +18,6 @@
 ## 적용 후
 <img src="docs/images/after.gif" alt="적용후">
 <br><br>
-<img src="docs/images/적용2.png" alt="적용후2">
+<img src="docs/images/kor.png" alt="적용후2">
 <br><br>
-<img src="docs/images/적용1.png" alt="적용후1">
+<img src="docs/images/eng.png" alt="적용후1">

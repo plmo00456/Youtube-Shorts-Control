@@ -727,6 +727,7 @@ ytd-reel-player-overlay-renderer[is-watch-while-mode] #actions.ytd-reel-player-o
 }
 
 #custom-help {
+  background-color: #fff;
   display: none;
   position: absolute;
   bottom: 0;
@@ -739,6 +740,12 @@ ytd-reel-player-overlay-renderer[is-watch-while-mode] #actions.ytd-reel-player-o
   -moz-user-select:none;
   -ms-user-select:none;
   user-select:none;
+  cursor: grab;
+  z-index: 999;
+}
+
+#custom-help:active{
+  cursor: grabbing;
 }
 
 #custom-help.active {
@@ -797,7 +804,12 @@ ytd-reel-player-overlay-renderer[is-watch-while-mode] #actions.ytd-reel-player-o
   align-items: center;
 }
 
-#custom-help .row:not(.header) {
+#custom-help .row.title {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
+}
+
+#custom-help .row:not(.header, .title) {
   justify-content: space-between;
   padding: 8px 0;
   border-top: 1px solid rgba(0,0,0,0.1);
@@ -806,4 +818,26 @@ ytd-reel-player-overlay-renderer[is-watch-while-mode] #actions.ytd-reel-player-o
 
 #custom-help .row:not(.header) span:nth-child(2) {
   width: 35%;
+}
+
+html[dark] #custom-help {
+  color: #fff;
+  background: #282828;
+  box-shadow: none;
+}
+
+html[dark] #custom-help .row:not(.header, .title) {
+  border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+html[dark] #custom-help .header button {
+  background-color: rgba(242, 242, 242, .9);
+}
+
+html[dark] #custom-help .header button:hover {
+  background-color: rgba(242, 242, 242, 0.8);
+}
+
+html[dark] #custom-help .header button:active{
+  background-color: rgba(242, 242, 242, 0.7);
 }

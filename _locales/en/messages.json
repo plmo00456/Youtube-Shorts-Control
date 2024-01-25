@@ -51,5 +51,35 @@
   },
   "msg_video_help_volume_up": {
     "message": "Turn up the volume"
+  },
+  "msg_video_help_pause":  {
+    "message": "Toggle play/pause"
+  },
+  "msg_video_help_move_point": {
+    "message": "Seek to specific point in the video"
+  },
+  "msg_video_help_move_next": {
+    "message": "Seek to next video"
+  },
+  "msg_video_help_move_previous": {
+    "message": "Seek to previous video"
+  },
+  "msg_video_help_autoplay": {
+    "message": "Toggle Auto Play mode"
+  },
+  "msg_video_help_pip": {
+    "message": "Toggle pip mode"
+  },
+  "msg_video_help_mute": {
+    "message": "Toggle mute"
+  },
+  "msg_video_help_title_playback": {
+    "message": "PLAYBACK"
+  },
+  "msg_video_help_title_general": {
+    "message": "GENERAL"
+  },
+  "msg_video_help_shortcut_or": {
+    "message": "OR"
   }
 }

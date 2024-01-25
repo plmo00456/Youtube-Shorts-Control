@@ -51,5 +51,35 @@
   },
   "msg_video_help_volume_up": {
     "message": "소리 크게"
+  },
+  "msg_video_help_pause":  {
+    "message": "재생/일시정지 전환"
+  },
+  "msg_video_help_move_point": {
+    "message": "동영상의 특정 지점 탐색"
+  },
+  "msg_video_help_move_next": {
+    "message": "다음 동영상 탐색"
+  },
+  "msg_video_help_move_previous": {
+    "message": "이전 동영상 탐색"
+  },
+  "msg_video_help_autoplay": {
+    "message": "자동 재생 모드 전환"
+  },
+  "msg_video_help_pip": {
+    "message": "PIP 모드 전환"
+  },
+  "msg_video_help_mute": {
+    "message": "음소거 전환"
+  },
+  "msg_video_help_title_playback": {
+    "message": "재생"
+  },
+  "msg_video_help_title_general": {
+    "message": "일반"
+  },
+  "msg_video_help_shortcut_or": {
+    "message": "또는"
   }
 }
