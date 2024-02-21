@@ -21,9 +21,28 @@
 }
 
 #custom-progress-bar > .buffer-bar {
+  display: flex;
+  justify-content: center;
   background: #bfbfbf;
   width: 100%;
   z-index: 1;
+}
+
+#custom-progress-bar .tt {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 3;
+}
+
+#custom-progress-bar .tt > span {
+  display: none;
+  color: rgba(255, 255, 255, 1.5);
+  font-size: 13px;
+}
+
+#custom-progress-bar:hover .tt > span {
+  display: inline-block;
 }
 
 #custom-progress-bar > .play-bar {

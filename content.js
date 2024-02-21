@@ -726,162 +726,165 @@ window.onload = function() {
     });
   }
 
+  function keydownEvent() {
+    const activeElement = document.activeElement;
+
+    // input[text]에선 작동 X
+    if (activeElement &&
+        (activeElement.tagName.toLowerCase() === 'input' &&
+            activeElement.type.toLowerCase() === 'text') ||
+        activeElement.id === 'contenteditable-root'
+    ) {
+      return;
+    }
+
+    // 영상 빨리감기
+    if(event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key.toLowerCase() === 'j' || event.key.toLowerCase() === 'l'){
+      showVideoMove(event.key, 700);
+    }
+
+    // 영상 지점 이동
+    if (event.key >= '0' && event.key <= '9') {
+      switch(event.key){
+        case '0':
+          video.currentTime = 0;
+          break;
+        case '1':
+          video.currentTime = video.duration * 0.1;
+          break;
+        case '2':
+          video.currentTime = video.duration * 0.2;
+          break;
+        case '3':
+          video.currentTime = video.duration * 0.3;
+          break;
+        case '4':
+          video.currentTime = video.duration * 0.4;
+          break;
+        case '5':
+          video.currentTime = video.duration * 0.5;
+          break;
+        case '6':
+          video.currentTime = video.duration * 0.6;
+          break;
+        case '7':
+          video.currentTime = video.duration * 0.7;
+          break;
+        case '8':
+          video.currentTime = video.duration * 0.8;
+          break;
+        case '9':
+          video.currentTime = video.duration * 0.9;
+          break;
+      }
+    }
+
+    // 영상 재생속도
+    if(event.key.toLowerCase() === '<' || event.key.toLowerCase() === '>'){
+      const inputSlider = document.querySelector(".range input");
+      const speedBtn = document.querySelector('#msg_view_speed');
+      if(inputSlider){
+        if(event.key.toLowerCase() === '>'){
+          inputSlider.value = parseFloat(inputSlider.value) + 0.25;
+        }else{
+          inputSlider.value = parseFloat(inputSlider.value) - 0.25;
+        }
+        if(inputSlider.value !== '1'){
+          speedBtn.classList.add('active');
+        }else{
+          speedBtn.classList.remove('active');
+        }
+        inputSlider.dispatchEvent(new Event('input', {
+          'bubbles': true,
+          'cancelable': true
+        }));
+      }
+    }
+
+    // 영상 소리조절
+    if(event.key.toLowerCase() === '+' || event.key.toLowerCase() === '=' ||
+        event.key.toLowerCase() === '-' || event.key.toLowerCase() === '_' ||
+        event.key.toLowerCase() === '[' || event.key.toLowerCase() === ']'){
+      const volumeWrap = document.querySelector('#volume-range');
+      if(volumeWrap){
+        const volumeRange = volumeWrap.querySelector('input[type=range]');
+        if(event.key.toLowerCase() === '+' || event.key.toLowerCase() === '=' || event.key.toLowerCase() === ']')
+          volumeRange.value = parseInt(volumeRange.value) + 5;
+        else
+          volumeRange.value = parseInt(volumeRange.value) - 5;
+        volumeRange.dispatchEvent(new Event('input', {
+          'bubbles': true,
+          'cancelable': true
+        }));
+      }
+    }
+
+    // 영상 자동재생 모드
+    if(event.key.toLowerCase() === 'o'){
+      const msgViewAutoPlay = document.querySelector('#msg_view_auto_play');
+      if(msgViewAutoPlay)
+        msgViewAutoPlay.click();
+    }
+
+    // 영상 pip 모드
+    if(event.key.toLowerCase() === 'p'){
+      const pipBtn = document.querySelector('#msg_view_pip');
+      if (document.pictureInPictureElement)
+        pipBtn.classList.add('active');
+      if (document.pictureInPictureElement) {
+        document.exitPictureInPicture();
+        pipBtn.classList.remove('active');
+      } else if (document.pictureInPictureEnabled) {
+        video.requestPictureInPicture();
+        pipBtn.classList.add('active');
+      }
+    }
+
+    if(event.key.toLowerCase() === 'm'){
+      const volumeWrap = document.querySelector('#volume-range');
+      const volumeRange = volumeWrap.querySelector('input[type=range]');
+      volumeWrap.querySelectorAll('svg').forEach((icon) => {
+        icon.classList.remove('show');
+      });
+
+      if(volumeRange.value !== '0'){
+        showAlert(chrome.i18n.getMessage('msg_alert_mute_on'), 500);
+        volumeRange.value = 0;
+        video.volume = '0';
+        volumeWrap.querySelector('.mute').classList.add('show');
+        video.muted = true;
+      }else{
+        chrome.storage.sync.get('volume', (data) => {
+          if (data['volume'] && data['volume'] !== '0') {
+            showAlert(data['volume'] + '%', 500);
+            volumeRange.value = data['volume'];
+            video.volume = data['volume'] / 100;
+            if(parseInt(volumeRange.value) === 0){
+              volumeWrap.querySelector('.mute').classList.add('show');
+            }else if(parseInt(volumeRange.value) <= 60){
+              volumeWrap.querySelector('.one').classList.add('show');
+            }else {
+              volumeWrap.querySelector('.two').classList.add('show');
+            }
+          } else {
+            showAlert('80%', 500);
+            volumeRange.value = 80;
+            video.volume = '0.8';
+            chrome.storage.sync.set({'volume': '80'});
+            volumeWrap.querySelector('.two').classList.add('show');
+          }
+        });
+        video.muted = false;
+      }
+    }
+  }
+
   const run = () => {
     video = document.querySelector("div#shorts-player .video-stream.html5-main-video");
     const init = () => {
       if(video){
-        window.addEventListener('keydown', function(event) {
-          const activeElement = document.activeElement;
-
-          // input[text]에선 작동 X
-          if (activeElement &&
-              (activeElement.tagName.toLowerCase() === 'input' &&
-              activeElement.type.toLowerCase() === 'text') ||
-              activeElement.id === 'contenteditable-root'
-          ) {
-            return;
-          }
-
-          // 영상 빨리감기
-          if(event.key === 'ArrowLeft' || event.key === 'ArrowRight' || event.key.toLowerCase() === 'j' || event.key.toLowerCase() === 'l'){
-            showVideoMove(event.key, 700);
-          }
-
-          // 영상 지점 이동
-          if (event.key >= '0' && event.key <= '9') {
-            switch(event.key){
-              case '0':
-                video.currentTime = 0;
-                break;
-              case '1':
-                video.currentTime = video.duration * 0.1;
-                break;
-              case '2':
-                video.currentTime = video.duration * 0.2;
-                break;
-              case '3':
-                video.currentTime = video.duration * 0.3;
-                break;
-              case '4':
-                video.currentTime = video.duration * 0.4;
-                break;
-              case '5':
-                video.currentTime = video.duration * 0.5;
-                break;
-              case '6':
-                video.currentTime = video.duration * 0.6;
-                break;
-              case '7':
-                video.currentTime = video.duration * 0.7;
-                break;
-              case '8':
-                video.currentTime = video.duration * 0.8;
-                break;
-              case '9':
-                video.currentTime = video.duration * 0.9;
-                break;
-            }
-          }
-
-          // 영상 재생속도
-          if(event.key.toLowerCase() === '<' || event.key.toLowerCase() === '>'){
-            const inputSlider = document.querySelector(".range input");
-            const speedBtn = document.querySelector('#msg_view_speed');
-            if(inputSlider){
-              if(event.key.toLowerCase() === '>'){
-                inputSlider.value = parseFloat(inputSlider.value) + 0.25;
-              }else{
-                inputSlider.value = parseFloat(inputSlider.value) - 0.25;
-              }
-              if(inputSlider.value !== '1'){
-                speedBtn.classList.add('active');
-              }else{
-                speedBtn.classList.remove('active');
-              }
-              inputSlider.dispatchEvent(new Event('input', {
-                'bubbles': true,
-                'cancelable': true
-              }));
-            }
-          }
-
-          // 영상 소리조절
-          if(event.key.toLowerCase() === '+' || event.key.toLowerCase() === '=' ||
-              event.key.toLowerCase() === '-' || event.key.toLowerCase() === '_' ||
-              event.key.toLowerCase() === '[' || event.key.toLowerCase() === ']'){
-            const volumeWrap = document.querySelector('#volume-range');
-            if(volumeWrap){
-              const volumeRange = volumeWrap.querySelector('input[type=range]');
-              if(event.key.toLowerCase() === '+' || event.key.toLowerCase() === '=' || event.key.toLowerCase() === ']')
-                volumeRange.value = parseInt(volumeRange.value) + 5;
-              else
-                volumeRange.value = parseInt(volumeRange.value) - 5;
-              volumeRange.dispatchEvent(new Event('input', {
-                'bubbles': true,
-                'cancelable': true
-              }));
-            }
-          }
-
-          // 영상 자동재생 모드
-          if(event.key.toLowerCase() === 'o'){
-            const msgViewAutoPlay = document.querySelector('#msg_view_auto_play');
-            if(msgViewAutoPlay)
-              msgViewAutoPlay.click();
-          }
-
-          // 영상 pip 모드
-          if(event.key.toLowerCase() === 'p'){
-            const pipBtn = document.querySelector('#msg_view_pip');
-            if (document.pictureInPictureElement)
-              pipBtn.classList.add('active');
-            if (document.pictureInPictureElement) {
-              document.exitPictureInPicture();
-              pipBtn.classList.remove('active');
-            } else if (document.pictureInPictureEnabled) {
-              video.requestPictureInPicture();
-              pipBtn.classList.add('active');
-            }
-          }
-
-          if(event.key.toLowerCase() === 'm'){
-            const volumeWrap = document.querySelector('#volume-range');
-            const volumeRange = volumeWrap.querySelector('input[type=range]');
-            volumeWrap.querySelectorAll('svg').forEach((icon) => {
-              icon.classList.remove('show');
-            });
-
-            if(volumeRange.value !== '0'){
-              showAlert(chrome.i18n.getMessage('msg_alert_mute_on'), 500);
-              volumeRange.value = 0;
-              video.volume = '0';
-              volumeWrap.querySelector('.mute').classList.add('show');
-              video.muted = true;
-            }else{
-              chrome.storage.sync.get('volume', (data) => {
-                if (data['volume'] && data['volume'] !== '0') {
-                  showAlert(data['volume'] + '%', 500);
-                  volumeRange.value = data['volume'];
-                  video.volume = data['volume'] / 100;
-                  if(parseInt(volumeRange.value) === 0){
-                    volumeWrap.querySelector('.mute').classList.add('show');
-                  }else if(parseInt(volumeRange.value) <= 60){
-                    volumeWrap.querySelector('.one').classList.add('show');
-                  }else {
-                    volumeWrap.querySelector('.two').classList.add('show');
-                  }
-                } else {
-                  showAlert('80%', 500);
-                  volumeRange.value = 80;
-                  video.volume = '0.8';
-                  chrome.storage.sync.set({'volume': '80'});
-                  volumeWrap.querySelector('.two').classList.add('show');
-                }
-              });
-              video.muted = false;
-            }
-          }
-        });
+        window.removeEventListener('keydown', keydownEvent);
+        window.addEventListener('keydown', keydownEvent);
       }
     };
 
